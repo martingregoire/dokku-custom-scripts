@@ -1,0 +1,6 @@
+[plugin]
+name = "custom-scripts"
+version = "0.1.0"
+description = "dokku plugin to run custom scripts before and after build and deploy"
+website_url = "https://github.com/martingregoire/dokku-custom-scripts"
+[plugin.config]

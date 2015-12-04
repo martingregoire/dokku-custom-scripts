@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+# set -x
+
+APP="$1"; IMAGE=$(get_app_image_name $APP); CACHE_DIR="$DOKKU_ROOT/$APP/cache"
+PLUGIN_DIR=$(dirname $0)
+PLUGIN_EXEC_CMD="plugn trigger"
+
+id=$(docker run -d $IMAGE test -f app/scripts/dokku-pre-build)
+if [ $(docker wait $id) -ne 0 ]; then
+	dokku_log_info1_quiet "No pre-build script found"
+else
+	DOCKER_ARGS=$(: | $PLUGIN_EXEC_CMD docker-args $APP build)
+	DOCKER_ARGS+=$(: | $PLUGIN_EXEC_CMD docker-args-build $APP)
+
+	dokku_log_info1_quiet "Starting pre-build script"
+	id=$(docker run -d -v $CACHE_DIR:/cache $DOCKER_ARGS $IMAGE /bin/bash -c "/app/scripts/dokku-pre-build")
+	docker attach $id || true
+	test $(docker wait $id) -eq 0
+	docker commit "$id" "$IMAGE" > /dev/null
+fi
+
