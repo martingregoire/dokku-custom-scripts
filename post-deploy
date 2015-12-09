@@ -11,8 +11,8 @@ id=$(docker run -d $IMAGE test -f app/scripts/dokku-post-deploy)
 if [ $(docker wait $id) -ne 0 ]; then
 	dokku_log_info1_quiet "No post-deploy script found"
 else
-	DOCKER_ARGS=$(: | $PLUGIN_EXEC_CMD docker-args $APP build)
-	DOCKER_ARGS+=$(: | $PLUGIN_EXEC_CMD docker-args-build $APP)
+	DOCKER_ARGS=$(: | $PLUGIN_EXEC_CMD docker-args $APP deploy)
+	DOCKER_ARGS+=$(: | $PLUGIN_EXEC_CMD docker-args-deploy $APP)
 
 	dokku_log_info1_quiet "Starting post-deploy script"
 	id=$(docker run -d -v $CACHE_DIR:/cache $DOCKER_ARGS $IMAGE /bin/bash -c "/app/scripts/dokku-post-deploy")
